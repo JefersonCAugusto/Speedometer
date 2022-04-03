@@ -12,190 +12,195 @@ sbit LCD_D4_Direction at TRISD4_bit;
 sbit LCD_D5_Direction at TRISD5_bit;
 sbit LCD_D6_Direction at TRISD6_bit;
 sbit LCD_D7_Direction at TRISD7_bit;
-// End LCD module connections
 
-
-
-//Defines
-#define FLAG_TMR0              INTCON.TMR0IF               //exemplo
-
-
-
- 
-
- 
- 
-/************************************ 
-*	Ação da Interrupção (high)		*
-*									*
-*************************************/
-void interrupt()
- {
-	if (INTCON.TMR0IF  == 1)		//estouro do TMR0
-	{}
-
-	if ()							//interrupção de hardware botão 1 (alterna entre "relogio-data e hora", 
-									//"velocidade-aceleração-antitude" e "velocidade-cronometro")
+// Defines
+#define IS_INTERRUPT PIR1.RCIF // exemplo
+#define END_MESSAGE '*'
+/************************************
+ *	Ação da Interrupção (high)		*
+ *									*
+ *************************************/
+void interrupt() //TODO: lembrar de configurar interrupt high level e pegar registrador responsavel por receber os dados da mensagem serial.
+{				
+	if (IS_INTERRUPT == 1)
 	{
-		delay_ms(80);
-		if (estado>3)
-			estado=0
-		estado++;
-		
-	}
-	
-	if ()							//interrupção de hardware botão 2		
-	{
-		delay_ms(80);
-		if (estado==2)		//estou na função de cronometro
+		IS_INTERRUPT = 0;
+		if (inicioDeMensagem)
 		{
-			delay_ms(300);
-			if(hardware botão 2)	//continua com botão pressionado
-				ResetCronometro();
-			cronometro=~cronometro;
-				
+			output[vetorPosicao] = dado_recebido;
+			vetorPosicao++;
+
+			if (dado_recebido == END_MESSAGE) 	
+			{
+				inicioDeMensagem = false;
+				mensagemRecebida = true;
+			}
 		}
-		
+
+		if (dado_recebido == '$')
+		{
+			mensagemRecebida = false;
+			inicioDeMensagem = true;
+			limpaOutput();
+			vetorPosicao = 0;
+		}
 	}
-	if(PIR1.RCIF==1)							//interupção de usart 
-	{
-		if (dado_recebido_for_igual_a_'$')
-			//começa a armazenar os proximos 5 caracteres para identificar a mensagem e depois armazenar a que for do interessse
-	}		
- }
-/************************************ 
-*			Prototipagem			*
-*			de	Funções  			*
-*									*
-*************************************/  
+}
+/************************************
+ *			Prototipagem			*
+ *			de Funções  			*
+ *									*
+ *************************************/
 void Animacao(string frase);
+void limpaOutput();
+void Apresenta_hora();
+/************************************
+ *				MAIN  				*
+ *									*
+ *************************************/
 
- 
-/************************************ 
-*				MAIN  				*
-*									*
-*************************************/  
-
-void main(){
-	/************************************ 
-	*			variáveis	 			*
-	*************************************/
+void main()
+{
+	/************************************
+	 *			variáveis	 			*
+	 *************************************/
 	char output[90];
-	unsigned int estado=0;
-	bool cronometro;
-	unsigned int hhC[2]=0;
-	unsigned int mmC[2]=0;
-	unsigned int ssC[2]=0;
-	unsigned int hhH[2]=0;
-	unsigned int mmH[2]=0;
-	unsigned int ssH[2]=0;
+	bool inicioDeMensagem = false;
+	bool mensagemRecebida = false;
+	unsigned int vetorPosicao = 0;
+	unsigned int contagemQuandoSemSinal = 0;
+	unsigned int estado = 0;
 	Animacao("Velocimentro 3.0");
-	
-	/************************************ 
-	*									*
-	* 		 	 	i/o					*
-	*									*
-	*************************************/
-	
-	
-	
-	/************************************ 
-	*	ttmr0 para 1 segundo			*
-	* 		 carga é c2f7				*
-	*									*
-	*************************************/
-	T0CON=0B10000110;    //ATIVEI     16BYTS          TEMPORIZADOR       BODA DESCIDA        ATIVA PRESCALER       CONFIGURA PRESCALER
-	TMR0L=0XF7;
-	TMR0H=0XC2;
-	INTCON.TMR0IF=0;
-	/************************************ 
-	*	Config de interrupção 			*
-	*	TMR0/							*
-	*************************************/
-	
-	INTCON.TMR0IE = 1;       // Habilita interrupção do timer0.
-	INTCON.TMR0IF = 0;       // Apaga flag de estouro do timer0, pois é fundamental para a sinalização do estouro.
-	T0CON.TMR0ON = 1;        // Liga timer0.
-	
-	INTCON.GIE = 1;          // Habilita as interrupções
-	INTCON.PEIE = 1;         // Habilita as interrupções dos perifericos.
-	
-	/************************************ 
-	*			Setup  					*
-	*									*
-	*************************************/ 
-	ADCON1 = 0x0f;      // Configura Todos A/D como I/O     
-	Lcd_Init();    //inicializa lcd nible menos significaivo           lembrar de conferir a ordem de mosi miso
-	Lcd_Cmd(_LCD_CLEAR);         //limpa tudo
-	Lcd_Cmd(_LCD_CURSOR_OFF);   //desliga cursor
-	
-	UART1_Init(9600);               // Initialize UART module at 9600 bps
-	Delay_ms(100);                  // Wait for UART module to stabilize
-  
+
+	/************************************
+	 *									*
+	 * 		 	 	i/o					*
+	 *									*
+	 *************************************/
+
+	/************************************
+	 *	ttmr0 para 1 segundo			*
+	 * 		 carga é c2f7				*
+	 *									*
+	 *************************************/
+	T0CON = 0B10000110; // ATIVEI     16BYTS          TEMPORIZADOR       BODA DESCIDA        ATIVA PRESCALER       CONFIGURA PRESCALER
+	TMR0L = 0XF7;
+	TMR0H = 0XC2;
+	INTCON.TMR0IF = 0;
+	/************************************
+	 *	Config de interrupção 			*
+	 *	TMR0/							*
+	 *************************************/
+
+	INTCON.TMR0IE = 1; // Habilita interrupção do timer0.
+	INTCON.TMR0IF = 0; // Apaga flag de estouro do timer0, pois é fundamental para a sinalização do estouro.
+	T0CON.TMR0ON = 1;  // Liga timer0.
+
+	INTCON.GIE = 1;	 // Habilita as interrupções
+	INTCON.PEIE = 1; // Habilita as interrupções dos perifericos.
+
+	/************************************
+	 *			Setup  					*
+	 *									*
+	 *************************************/
+	ADCON1 = 0x0f;			  // Configura Todos A/D como I/O
+	Lcd_Init();				  // inicializa lcd nible menos significaivo           lembrar de conferir a ordem de mosi miso
+	Lcd_Cmd(_LCD_CLEAR);	  // limpa tudo
+	Lcd_Cmd(_LCD_CURSOR_OFF); // desliga cursor
+
+	UART1_Init(9600); // Initialize UART module at 9600 bps
+	Delay_ms(100);	  // Wait for UART module to stabilize
+
 	while (1)
 	{
-		Apresenta_display();
+		bool sinalGpsOk = buffer[17] == 'A';
+		
+		if (mensagemRecebida && sinalGpsOk)
+		{
+			Apresenta_hora(output);
+			
+			if (messageType(output) == 1)	//GPRMC
+			{
+				int velocidade = CalculaVelocidade(output);
+				ApresentaVelocidade(velocidade);
+			}			
+		}
+		if (mensagemRecebida && !sinalGpsOk)
+		{
+			WaitingSignalGps();
+			AnimacaoSemSinal();
+		}
+		
+		mensagemRecebida = false;
 		
 	}
 }
 
-
-
-
-
-
-
 void Animacao(string frase)
 {
-	Lcd_Out(1,1,"                " + frase);
-	for(j=0; j<16; j++) 
-	{             
+	Lcd_Out(1, 1, "                " + frase);
+	for (j = 0; j < 16; j++)
+	{
 		Lcd_Cmd(_LCD_SHIFT_LEFT);
 		delay_ms(200);
 	}
 	delay_ms(2000);
 }
-string HoraGPS(string linhaRecebida)
+
+void Apresenta_hora(char buffer[90])
 {
-	//extrair dados de hora e apresentar em forma de string  hh:mm:ss (GMT -3)	
+			Lcd_Out(1,1, "Hour-"
+			Lcd_Chr_Cp(buffer[7]);
+			Lcd_Chr_Cp(buffer[8]);
+			Lcd_Chr_Cp(':');
+			Lcd_Chr_Cp(buffer[9]);
+			Lcd_Chr_Cp(buffer[10]);
+			Lcd_Chr_Cp(':');
+			Lcd_Chr_Cp(buffer[11]);
+			Lcd_Chr_Cp(buffer[12]);
+		
 }
-string DataGPS(string linhaRecebida)
-{
-	//extrair dados de data e apresentar em forma de string  dd:mm:aaaa (GMT -3)
+
+void limpaOutput(){
+	for (int i = 0; i <= 90; i++)
+	{
+		output[i] = 0;
+	}
 }
-void ResetCronometro()
+
+int messageType(char outputMessage[90])
 {
-	cronometro=false;
-	hhC=0;
-	mmC=0;
-	ssC=0;
+	if(outputMessage[0]=='G' && outputMessage[1]=='P' && outputMessage[1]=='R' && outputMessage[1]=='M' && outputMessage[1]=='C')
+		return 1;	
+	return 0;
+}
+
+void WaitingSignalGps()
+{
+	Lcd_Out(2,1, "waiting signal");	
+}
+
+void AnimacaoSemSinal()
+{
+	Lcd_Out(2,16, 0B'01011100');
+	delay_ms(350);
+	Lcd_Out(2,16, 0B'00101111');
+	delay_ms(350);
+}
+
+int ApresentaVelocidade(char buffer[90])
+{
+	char speedInString[3] = {buffer[44],buffer[46],buffer[47]};
 	
-}
-void Apresenta_display()
-{
-	if (output[17] != 'A')
-	{
-		Lcd_Out(1,1, "Fixando satélite"
-		Lcd_Out(1,2, ".                "
-		while (output[17] != 'A')
-		{
-			delay_ms(9000);
-			Lcd_Cmd(_LCD_SHIFT_RIGHT);
-			Lcd_Out(1,1, "Fixando satélite"
-		}
-		Lcd_Cmd(_LCD_CLEAR);       
-	}
-	if (estado==0)
-	{
-		Lcd_Out(1,1, "Hora-> "
-		Lcd_Chr_Cp(output[7]);
-		Lcd_Chr_Cp(output[8]);
-		Lcd_Chr_Cp(':');
-		Lcd_Chr_Cp(output[9]);
-		Lcd_Chr_Cp(output[10]);
-		Lcd_Chr_Cp(':');
-		Lcd_Chr_Cp(output[11]);
-		Lcd_Chr_Cp(output[12]);
-		Lcd_Out(1,2, "Velocidade: "
-	}
+	float speedInFloat = 0000;  //TODO: Ver como funciona conversor de string para float
+
+	float KmPHora = speedInFloat / 100;
+
+	Lcd_Clear();
+
+	Apresenta_hora(buffer);
+
+	Lcd_Out(2,1, "Speed: "
+
+	Lcd_Chr_Cp(kmPHora); //TODO talvez seja necessário converte de float para string
 }

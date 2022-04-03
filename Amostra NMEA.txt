@@ -1,0 +1,35 @@
+$GPRMC,000524.044,V,,,,,,,150209,,,N*41             latitude/longitude/data/hora/velocidade_em_nó
+$GPRMC,161229.487,A,3723.2475,N,12158.3416,W,0.13,309.62,030422,,*10
+    UTC Time 161229.487 hhmmss.sss
+    Status A A=data valid or V=data not valid 
+    Speed Over Ground 0.13 knots
+    ate 030422 ddmmyy
+
+$GPGGA,000525.054,,,,,0,00,,,M,0.0,M,,0000*55       hora/lati/log/Num_satelites_connected 
+$GPGSA,A,1,,,,,,,,,,,,,,,*1E                        all_sateliets_in_use/precisão
+$GPGSV,1,1,00*79                                    Dados_preciso_sobre_cada_GPS
+
+
+
+
+$GPRMC,001544.055,V,,,,,,,150209,,,N*46
+$GPGGA,001545.046,,,,,0,00,,,M,0.0,M,,0000*51
+$GPGSA,A,1,,,,,,,,,,,,,,,*1E
+$GPGSV,1,1,00*79
+$GPRMC,001545.046,V,,,,,,,150209,,,N*45
+$GPGGA,001546.044,,,,,0,00,,,M,0.0,M,,0000*50
+$GPGSA,A,1,,,,,,,,,,,,,,,*1E
+$GPRMC,001546.044,V,,,,,,,150209,,,N*44
+$GPGGA,001547.055,,,,,0,00,,,M,0.0,M,,0000*51
+$GPGSA,A,1,,,,,,,,,,,,,,,*1E
+$GPRMC,001547.055,V,,,,,,,150209,,,N*45
+$GPGGA,001548.044,,,,,0,00,,,M,0.0,M,,0000*5E
+$GPGSA,A,1,,,,,,,,,,,,,,,*1E
+$GPRMC,001548.044,V,,,,,,,150209,,,N*4A
+$GPGGA,001549.044,,,,,0,00,,,M,0.0,M,,0000*5F
+$GPGSA,A,1,,,,,,,,,,,,,,,*1E
+$GPRMC,001549.044,V,,,,,,,150209,,,N*4B
+$GPGGA,001550.053,,,,,0,00,,,M,0.0,M,,0000*51
+$GPGSA,A,1,,,,,,,,,,,,,,,*1E
+$GPGSV,1,1,00*79
+$GPRMC,001550.053,V,,,,,,,150209,,,N*45

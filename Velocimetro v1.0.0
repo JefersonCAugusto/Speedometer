@@ -54,6 +54,10 @@ void interrupt() //TODO: lembrar de configurar interrupt high level e pegar regi
 void Animacao(string frase);
 void limpaOutput();
 void Apresenta_hora();
+int messageType(char outputMessage[90]);
+void WaitingSignalGps();
+int ApresentaVelocidade(char buffer[90]);
+void AnimacaoSemSinal();
 /************************************
  *				MAIN  				*
  *									*
@@ -61,6 +65,7 @@ void Apresenta_hora();
 
 void main()
 {
+
 	/************************************
 	 *			variáveis	 			*
 	 *************************************/
